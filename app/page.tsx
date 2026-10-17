@@ -67,13 +67,53 @@ export default function Home() {
   const [authOpen, setAuthOpen] = useState(false);
   const [cloudState, setCloudState] = useState(isCloudConfigured ? "cloud" : "demo");
 
-  useEffect(() => {
-    setTeams(loadState("campbase-teams", initialTeams));
-    setPlayers(loadState("campbase-players", initialPlayers));
-    setMatches(loadState("campbase-matches", initialMatches));
-    setTrainings(loadState("campbase-trainings", initialTrainings));
-    if (supabase) supabase.auth.getSession().then(({ data }) => setUserEmail(data.session?.user.email ?? null));
-  }, []);
+useEffect(() => {
+  let cancelled = false;
+
+  async function initialize() {
+    if (supabase) {
+      const { data: sessionData } = await supabase.auth.getSession();
+
+      if (!cancelled) {
+        setUserEmail(sessionData.session?.user.email ?? null);
+      }
+
+      if (sessionData.session) {
+        const { data: cloudTeams, error } = await supabase
+          .from("teams")
+          .select("id, name, category, format, season");
+        console.log("Equipos recibidos de Supabase:", cloudTeams);
+        if (error) {
+          console.error("Error cargando equipos:", error.message);
+        } else if (!cancelled && cloudTeams && cloudTeams.length > 0) {
+          setTeams(
+            cloudTeams.map((t) => ({
+              id: String(t.id),
+              name: t.name ?? "",
+              category: t.category ?? "",
+              format: t.format ?? "",
+              season: t.season ?? "",
+            }))
+          );
+          return;
+        }
+      }
+    }
+
+    if (!cancelled) {
+      setTeams(loadState("campbase-teams", initialTeams));
+      setPlayers(loadState("campbase-players", initialPlayers));
+      setMatches(loadState("campbase-matches", initialMatches));
+      setTrainings(loadState("campbase-trainings", initialTrainings));
+    }
+  }
+
+  void initialize();
+
+  return () => {
+    cancelled = true;
+  };
+}, []);
   useEffect(() => { if (typeof window !== "undefined") localStorage.setItem("campbase-teams", JSON.stringify(teams)); }, [teams]);
   useEffect(() => { if (typeof window !== "undefined") localStorage.setItem("campbase-players", JSON.stringify(players)); }, [players]);
   useEffect(() => { if (typeof window !== "undefined") localStorage.setItem("campbase-matches", JSON.stringify(matches)); }, [matches]);

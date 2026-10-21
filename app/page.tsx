@@ -39,6 +39,7 @@ const initialTrainings: Training[] = [
 ];
 
 type Tab = "Inicio" | "Equipos" | "Jugadores" | "Partidos" | "Entrenamientos" | "Estadísticas";
+const shortLabel: Record<Tab, string> = { Inicio: "Inicio", Equipos: "Equipos", Jugadores: "Jugadores", Partidos: "Partidos", Entrenamientos: "Entrenos", Estadísticas: "Stats" };
 
 function loadState<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;
@@ -199,6 +200,10 @@ useEffect(() => {
         <footer className="footer"><span>© 2026 CAMPBASE · FOOTBALL OS</span><span><span className="footer-dot"/> Plataforma de gestión deportiva</span></footer>
       </div>
     </section>
+
+    <nav className="bottom-nav" aria-label="Navegación principal">
+      {nav.map(item => <button key={item.label} className={`bottom-nav-item ${tab===item.label?"active":""}`} aria-current={tab===item.label?"page":undefined} onClick={() => {setTab(item.label);setQuery("");}}>{item.icon}<span>{shortLabel[item.label]}</span></button>)}
+    </nav>
 
     {modal && <div className="modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)setModal(null)}}><section className="modal"><div className="modal-header"><div><div className="eyebrow">CAMPBASE · NUEVO REGISTRO</div><h2>{modal==="player"?"Añadir jugador":modal==="match"?"Añadir partido":modal==="training"?"Crear entrenamiento":"Crear equipo"}</h2></div><button className="icon-button" onClick={()=>setModal(null)}><X size={19}/></button></div>
       {modal==="player"&&<form onSubmit={addPlayer} className="form-grid"><label className="wide">Nombre completo<input name="name" required placeholder="Nombre y apellidos"/></label><label>Dorsal<input name="number" type="number" min="0" max="99" defaultValue="0"/></label><label>Posición<select name="position"><option>Portero</option><option>Defensa</option><option>Centrocampista</option><option>Extremo</option><option>Delantero</option><option>Polivalente</option></select></label><div className="wide form-note">Los datos de menores deben limitarse a lo necesario y ser accesibles solo a usuarios autorizados.</div><button className="button primary wide" type="submit">Guardar jugador</button></form>}

@@ -1,4 +1,24 @@
+# dependencias y compilación
 node_modules/
 .next/
+out/
+
+# variables de entorno: nunca subir claves
 .env
-.env*.local
+.env.*
+!.env.example
+
+# Vercel y Supabase local
+.vercel
+supabase/.temp/
+supabase/.branches/
+
+# temporales y sistema
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+.DS_Store
+Thumbs.db
+
+# claves y certificados
+*.pem
